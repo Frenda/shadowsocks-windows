@@ -240,19 +240,9 @@ namespace Shadowsocks.Controller
             }
         }
 
-        public void DisableProxy()
+        public void SaveProxy(ProxyConfig proxyConfig)
         {
-            _config.proxy.useProxy = false;
-            SaveConfig(_config);
-        }
-
-        public void EnableProxy(int type, string proxy, int port, int timeout)
-        {
-            _config.proxy.useProxy = true;
-            _config.proxy.proxyType = type;
-            _config.proxy.proxyServer = proxy;
-            _config.proxy.proxyPort = port;
-            _config.proxy.proxyTimeout = timeout;
+            _config.proxy = proxyConfig;
             SaveConfig(_config);
         }
 
@@ -490,8 +480,6 @@ namespace Shadowsocks.Controller
 
         protected void Reload()
         {
-            StopPlugins();
-
             Encryption.RNG.Reload();
             // some logic in configuration updated the config when saving, we need to read it again
             _config = Configuration.Load();
@@ -521,6 +509,9 @@ namespace Shadowsocks.Controller
             {
                 _listener.Stop();
             }
+
+            StopPlugins();
+
             // don't put PrivoxyRunner.Start() before pacServer.Stop()
             // or bind will fail when switching bind address from 0.0.0.0 to 127.0.0.1
             // though UseShellExecute is set to true now
@@ -534,7 +525,7 @@ namespace Shadowsocks.Controller
                     strategy.ReloadServers();
                 }
 
-                StartPlugins();
+                StartPlugin();
                 privoxyRunner.Start(_config);
 
                 TCPRelay tcpRelay = new TCPRelay(this, _config);
@@ -572,13 +563,10 @@ namespace Shadowsocks.Controller
             Utils.ReleaseMemory(true);
         }
 
-        private void StartPlugins()
+        private void StartPlugin()
         {
-            foreach (var server in _config.configs)
-            {
-                // Early start plugin processes
-                GetPluginLocalEndPointIfConfigured(server);
-            }
+            var server = _config.GetCurrentServer();
+            GetPluginLocalEndPointIfConfigured(server);
         }
 
         protected void SaveConfig(Configuration newConfig)
