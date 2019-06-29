@@ -4,8 +4,8 @@ Shadowsocks=Shadowsocks
 
 # Menu items
 
-Enable System Proxy=システム プロキシを有効にする
-Mode=モード
+System Proxy=システムプロキシ
+Disable=無効
 PAC=PAC
 Global=全般
 Servers=サーバー
@@ -61,6 +61,7 @@ Remarks=付記
 Timeout(Sec)=タイムアウト (秒)
 OK=OK
 Cancel=キャンセル
+Apply=適用
 New server=新規サーバー
 Move &Up=上に移動 (&U)
 Move D&own=下に移動 (&O)
@@ -117,10 +118,10 @@ Reg Hotkeys At Startup=起動時にホットキーを登録する
 
 Shadowsocks Error: {0}=Shadowsocks エラー: {0}
 Port {0} already in use=ポート番号 {0} は既に使用されています。
+Port {0} is reserved by system= ポート番号 {0} はシステムによって予約されています
 Invalid server address=サーバーアドレスが無効です。
 Illegal port number format=ポート番号のフォーマットが無効です。
 Illegal timeout format=タイムアウト値のフォーマットが無効です。
-Please add at least one server=少なくとも一つのサーバーを指定して下さい。
 Server IP can not be blank=サーバー IP が指定されていません。
 Password can not be blank=パスワードが指定されていません。
 Port out of range=ポート番号は範囲外です。
