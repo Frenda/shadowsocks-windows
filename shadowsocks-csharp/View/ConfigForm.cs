@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using Shadowsocks.Controller;
 using Shadowsocks.Model;
@@ -15,6 +14,8 @@ namespace Shadowsocks.View
         // this is a copy of configuration that we are working on
         private Configuration _modifiedConfiguration;
         private int _lastSelectedIndex = -1;
+
+        private bool isChange = false;
 
         public ConfigForm(ShadowsocksController controller)
         {
@@ -86,13 +87,8 @@ namespace Shadowsocks.View
 
         private void ConfigValueChanged(object sender, EventArgs e)
         {
+            isChange = true;
             ApplyButton.Enabled = true;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void UpdateIndexToEnd()
-        {
-            _lastSelectedIndex = (ServersListBox.SelectedIndex = (_modifiedConfiguration.configs.Count - 1));
         }
 
         private bool ValidateAndSaveSelectedServerDetails(bool isSave = false, bool isCopy = false)
@@ -157,8 +153,11 @@ namespace Shadowsocks.View
                 _modifiedConfiguration.configs.RemoveAt(_lastSelectedIndex);
                 ServersListBox.SelectedIndexChanged -= ServersListBox_SelectedIndexChanged;
 
+                int lastIndex = ServersListBox.SelectedIndex;
+
                 LoadServerNameListToUI(_modifiedConfiguration);
-                UpdateIndexToEnd();
+
+                _lastSelectedIndex = (ServersListBox.SelectedIndex = lastIndex);
 
                 ServersListBox.SelectedIndexChanged += ServersListBox_SelectedIndexChanged;
                 return true;
@@ -182,7 +181,7 @@ namespace Shadowsocks.View
                     if (result == DialogResult.OK)
                         return null;
                 }
-                else if (ApplyButton.Enabled && !isSave && !isCopy)
+                else if (isChange && !isSave && !isCopy)
                 {
                     var result = MessageBox.Show(I18N.GetString("Invalid server address, Cannot automatically save or discard changes"), I18N.GetString("Auto save failed"), MessageBoxButtons.OKCancel);
 
@@ -220,7 +219,7 @@ namespace Shadowsocks.View
                     if (result == DialogResult.OK)
                         return null;
                 }
-                else if (!isSave && !isCopy)
+                else if (isChange && !isSave && !isCopy)
                 {
                     var result = MessageBox.Show(I18N.GetString("Illegal port number format, Cannot automatically save or discard changes"), I18N.GetString("Auto save failed"), MessageBoxButtons.OKCancel);
 
@@ -259,7 +258,7 @@ namespace Shadowsocks.View
                     if (result == DialogResult.OK)
                         return null;
                 }
-                else if (ApplyButton.Enabled && !isSave && !isCopy)
+                else if (isChange && !isSave && !isCopy)
                 {
                     var result = MessageBox.Show(I18N.GetString("Password can not be blank, Cannot automatically save or discard changes"), I18N.GetString("Auto save failed"), MessageBoxButtons.OKCancel);
 
@@ -297,7 +296,7 @@ namespace Shadowsocks.View
                     if (result == DialogResult.OK)
                         return null;
                 }
-                else if (ApplyButton.Enabled && !isSave && !isCopy)
+                else if (isChange && !isSave && !isCopy)
                 {
                     var result = MessageBox.Show(I18N.GetString("Illegal timeout format, Cannot automatically save or discard changes"), I18N.GetString("Auto save failed"), MessageBoxButtons.OKCancel);
 
@@ -351,7 +350,7 @@ namespace Shadowsocks.View
             RemarksTextBox.Text = server.remarks;
             TimeoutTextBox.Text = server.timeout.ToString();
 
-            ApplyButton.Enabled = false;
+            isChange = false;
         }
 
         private void ShowHidePluginArgInput(bool show)
@@ -453,7 +452,7 @@ namespace Shadowsocks.View
             {
                 Configuration.AddDefaultServerOrServer(_modifiedConfiguration);
                 LoadServerNameListToUI(_modifiedConfiguration);
-                UpdateIndexToEnd();
+                _lastSelectedIndex = (ServersListBox.SelectedIndex = _modifiedConfiguration.configs.Count - 1);
             }
         }
 
@@ -462,9 +461,9 @@ namespace Shadowsocks.View
             if (ValidateAndSaveSelectedServerDetails(isCopy: true))
             {
                 Server currServer = _modifiedConfiguration.configs[_lastSelectedIndex];
-                Configuration.AddDefaultServerOrServer(_modifiedConfiguration, currServer);
+                Configuration.AddDefaultServerOrServer(_modifiedConfiguration, currServer, _lastSelectedIndex + 1);
                 LoadServerNameListToUI(_modifiedConfiguration);
-                UpdateIndexToEnd();
+                _lastSelectedIndex = (ServersListBox.SelectedIndex = (_lastSelectedIndex + 1));
             }
         }
 
@@ -478,7 +477,11 @@ namespace Shadowsocks.View
             }
 
             LoadServerNameListToUI(_modifiedConfiguration);
-            UpdateIndexToEnd();
+            ServersListBox.SelectedIndexChanged -= ServersListBox_SelectedIndexChanged;
+
+            _lastSelectedIndex = (ServersListBox.SelectedIndex = (_lastSelectedIndex >= _modifiedConfiguration.configs.Count ? (_modifiedConfiguration.configs.Count - 1) : _lastSelectedIndex));
+
+            ServersListBox.SelectedIndexChanged += ServersListBox_SelectedIndexChanged;
             LoadSelectedServerDetails();
 
             UpdateButtons();
