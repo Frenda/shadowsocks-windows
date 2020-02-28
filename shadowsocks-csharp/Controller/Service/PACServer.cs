@@ -1,21 +1,19 @@
-﻿using System;
-using System.Collections;
-using System.Globalization;
-using System.IO;
+﻿using Shadowsocks.Encryption;
+using Shadowsocks.Model;
+using Shadowsocks.Util;
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using Shadowsocks.Encryption;
-using Shadowsocks.Model;
-using Shadowsocks.Properties;
-using Shadowsocks.Util;
-using System.Threading.Tasks;
 using System.Web;
+using NLog;
 
 namespace Shadowsocks.Controller
 {
     public class PACServer : Listener.Service
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public const string RESOURCE_NAME = "pac";
 
         private string PacSecret
@@ -48,17 +46,12 @@ namespace Shadowsocks.Controller
             string usedSecret = _config.secureLocalPac ? $"&secret={PacSecret}" : "";
             string contentHash = GetHash(_pacDaemon.GetPACContent());
             PacUrl = $"http://{config.localHost}:{config.localPort}/{RESOURCE_NAME}?hash={contentHash}{usedSecret}";
-            Logging.Debug("Set PAC URL:" + PacUrl);
+            logger.Debug("Set PAC URL:" + PacUrl);
         }
 
         private static string GetHash(string content)
         {
-            var contentBytes = Encoding.ASCII.GetBytes(content);
-            using (var md5 = System.Security.Cryptography.MD5.Create())
-            {
-                var md5Bytes = md5.ComputeHash(contentBytes);
-                return HttpServerUtility.UrlTokenEncode(md5Bytes);
-            };
+            return HttpServerUtility.UrlTokenEncode(MbedTLS.MD5(Encoding.ASCII.GetBytes(content)));
         }
 
         public override bool Handle(byte[] firstPacket, int length, Socket socket, object state)
@@ -187,7 +180,7 @@ Connection: Close
             }
             catch (Exception e)
             {
-                Logging.LogUsefulException(e);
+                logger.LogUsefulException(e);
                 socket.Close();
             }
         }
