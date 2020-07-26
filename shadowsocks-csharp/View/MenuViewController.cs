@@ -172,7 +172,7 @@ namespace Shadowsocks.View
             }
             else
             {
-                serverInfo = config.GetCurrentServer().FriendlyName();
+                serverInfo = config.GetCurrentServer().ToString();
             }
             // show more info by hacking the P/Invoke declaration for NOTIFYICONDATA inside Windows Forms
             string text = I18N.GetString("Shadowsocks") + " " + UpdateChecker.Version + "\n" +
@@ -478,7 +478,7 @@ namespace Shadowsocks.View
             {
                 if (Configuration.ChecksServer(server))
                 {
-                    MenuItem item = new MenuItem(server.FriendlyName());
+                    MenuItem item = new MenuItem(server.ToString());
                     item.Tag = configuration.configs.FindIndex(s => s == server);
                     item.Click += AServerItem_Click;
                     items.Add(strategyCount + serverCount, item);
@@ -685,9 +685,9 @@ namespace Shadowsocks.View
             controller.TouchPACFile();
         }
 
-        private void UpdatePACFromGeositeItem_Click(object sender, EventArgs e)
+        private async void UpdatePACFromGeositeItem_Click(object sender, EventArgs e)
         {
-            controller.UpdatePACFromGeosite();
+            await GeositeUpdater.UpdatePACFromGeosite();
         }
 
         private void EditUserRuleFileForGeositeItem_Click(object sender, EventArgs e)
