@@ -6,8 +6,22 @@
 // 2019-02-08: Updated to support shadowsocks-windows user rules.
 
 var proxy = __PROXY__;
-var userrules = __USERRULES__;
-var rules = __RULES__;
+var userrules = [];
+var rules = [];
+
+// convert to abp grammar
+var re = /^(@@)?\|\|.*?[^\^]$/;
+for (var i = 0; i < __RULES__.length; i++) {
+    var s = __RULES__[i];
+    if (s.match(re)) s += "^";
+    rules.push(s);
+}
+
+for (var i = 0; i < __USERRULES__.length; i++) {
+    var s = __USERRULES__[i];
+    if (s.match(re))  s += "^";
+    userrules.push(s);
+}
 
 /*
 * This file is part of Adblock Plus <http://adblockplus.org/>,

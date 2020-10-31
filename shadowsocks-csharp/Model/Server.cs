@@ -29,6 +29,9 @@ namespace Shadowsocks.Model
         public int server_port;
         public string password;
         public string method;
+        
+
+
 
         // optional fields
         [DefaultValue("")]
@@ -43,7 +46,11 @@ namespace Shadowsocks.Model
         [DefaultValue("")]
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public string remarks;
-        
+
+        [DefaultValue("")]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        public string group;
+
         public int timeout;
 
         public override int GetHashCode()
@@ -51,21 +58,17 @@ namespace Shadowsocks.Model
             return server.GetHashCode() ^ server_port;
         }
 
-        public override bool Equals(object obj)
-        {
-            Server o2 = (Server)obj;
-            return server == o2.server && server_port == o2.server_port;
-        }
+        public override bool Equals(object obj) => obj is Server o2 && server == o2.server && server_port == o2.server_port;
 
         public override string ToString()
         {
-            if (server.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(server))
             {
                 return I18N.GetString("New server");
             }
 
             string serverStr = $"{FormalHostName}:{server_port}";
-            return remarks.IsNullOrEmpty()
+            return string.IsNullOrEmpty(remarks)
                 ? serverStr
                 : $"{remarks} ({serverStr})";
         }
@@ -96,7 +99,7 @@ namespace Shadowsocks.Model
                     server_port
                     );
 
-                if (!plugin.IsNullOrWhiteSpace())
+                if (!string.IsNullOrWhiteSpace(plugin))
                 {
 
                     string pluginPart = plugin;
@@ -109,7 +112,7 @@ namespace Shadowsocks.Model
                 }
             }
 
-            if (!remarks.IsNullOrEmpty())
+            if (!string.IsNullOrEmpty(remarks))
             {
                 tag = $"#{HttpUtility.UrlEncode(remarks, Encoding.UTF8)}";
             }
@@ -154,7 +157,7 @@ namespace Shadowsocks.Model
             Server server = new Server();
             var base64 = match.Groups["base64"].Value.TrimEnd('/');
             var tag = match.Groups["tag"].Value;
-            if (!tag.IsNullOrEmpty())
+            if (!string.IsNullOrEmpty(tag))
             {
                 server.remarks = HttpUtility.UrlDecode(tag, Encoding.UTF8);
             }
@@ -180,7 +183,7 @@ namespace Shadowsocks.Model
         public static Server ParseURL(string serverUrl)
         {
             string _serverUrl = serverUrl.Trim();
-            if (!_serverUrl.BeginWith("ss://", StringComparison.InvariantCultureIgnoreCase))
+            if (!_serverUrl.StartsWith("ss://", StringComparison.InvariantCultureIgnoreCase))
             {
                 return null;
             }
