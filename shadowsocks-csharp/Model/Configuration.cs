@@ -46,6 +46,7 @@ namespace Shadowsocks.Model
         public bool isIPv6Enabled; // for experimental ipv6 support
         public bool generateLegacyUrl; // for pre-sip002 url compatibility
         public string geositeUrl; // for custom geosite source (and rule group)
+        public string geositeSha256sumUrl; // optional custom sha256sum url, leave empty to disable checksum verification for your custom geosite source
         public List<string> geositeDirectGroups;  // groups of domains that we connect without the proxy
         public List<string> geositeProxiedGroups; // groups of domains that we connect via the proxy
         public bool geositePreferDirect; // a.k.a blacklist mode
@@ -84,14 +85,16 @@ namespace Shadowsocks.Model
             isIPv6Enabled = false;
             generateLegacyUrl = false;
             geositeUrl = "";
+            geositeSha256sumUrl = "";
             geositeDirectGroups = new List<string>()
             {
+                "private",
                 "cn",
-                "geolocation-!cn@cn"
+                "geolocation-!cn@cn",
             };
             geositeProxiedGroups = new List<string>()
             {
-                "geolocation-!cn"
+                "geolocation-!cn",
             };
             geositePreferDirect = false;
             userAgent = "ShadowsocksWindows/$version";
@@ -308,6 +311,7 @@ namespace Shadowsocks.Model
         public static void ResetGeositeDirectGroup(ref List<string> geositeDirectGroups)
         {
             geositeDirectGroups.Clear();
+            geositeDirectGroups.Add("private");
             geositeDirectGroups.Add("cn");
             geositeDirectGroups.Add("geolocation-!cn@cn");
         }
